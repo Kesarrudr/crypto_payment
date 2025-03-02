@@ -30,13 +30,5 @@ module.exports = {
     ".*.js",
     "node_modules/",
   ],
-  overrides: [
-    { files: ["*.js?(x)", "*.ts?(x)"] },
-    {
-      files: ["*.ts", "*.tsx"],
-      rules: {
-        "no-undef": "off",
-      },
-    },
-  ],
+  overrides: [{ files: ["*.js?(x)", "*.ts?(x)"] }],
 };

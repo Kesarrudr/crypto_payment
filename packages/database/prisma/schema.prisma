@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
@@ -8,12 +5,34 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
-  output = "../generated/client"
+  output   = "../generated/client"
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
+model Merchant {
+  id                     String                   @id @default(cuid())
+  username               String                   @unique
+  password               String
+  mnemonic               String
+  publicKey              String                   @unique
+  privateKey             String
+  CreatedAt              DateTime                 @default(now())
+  AssociatedTokenAccount AssociatedTokenAccount[]
+}
+
+model StableToken {
+  id                     String                   @id @default(cuid())
+  mint                   String                   @unique // Stable token (USDT, USDC)
+  AssociatedTokenAccount AssociatedTokenAccount[]
+}
+
+model AssociatedTokenAccount {
+  id               String      @id @default(cuid())
+  accountAddress   String      @unique // Token account address on Solana
+  stableTokenMint  String // Ensures one account per stable token per merchant
+  stableToken      StableToken @relation(fields: [stableTokenMint], references: [mint])
+  merchantUserName String
+  merchant         Merchant    @relation(fields: [merchantUserName], references: [username])
+  CreatedAt        DateTime    @default(now())
+
+  @@unique([stableTokenMint, merchantUserName])
 }

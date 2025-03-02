@@ -3,6 +3,7 @@ import express, { Express } from "express";
 import { ErrorHandler } from "./utilis";
 import { V1Router } from "./version";
 
+//TODO: add the return types fo the server response also
 const createServer = (): Express => {
   const app = express();
 

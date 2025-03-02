@@ -24,7 +24,8 @@ const ErrorHandler: ErrorRequestHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
-  console.log(error); //use Better error logger
+  //TODO: add a better Error logger
+  // console.log(error); //use Better error logger
 
   const message =
     error.isOperational && error.message
