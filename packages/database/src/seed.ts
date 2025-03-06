@@ -3,7 +3,7 @@ import { prisma } from "./client";
 const DEFAULT_USERS = [
   {
     username: "ayam",
-    password: "$2b$10$9dw8A4iRGPKHV6s.61YXefxIwKzWh38n7HkwNwaQp421C/pUi", // Hashed password
+    password: "$2b$10$3Shl.kj/1I/bjVAGfdfW7ep7akvzHBBUrKehh.WCqcvjvn6Txn5km", // Hashed password
     mnemonic:
       "minimum doctor useful insect goddess wasp bright veteran outdoor allow allow stumble",
     publicKey: "ExH49ofTzE21RdaZm8XdEKztap7eF7vpUttfnzvRQGQX",
@@ -12,12 +12,21 @@ const DEFAULT_USERS = [
   },
   {
     username: "rudr",
-    password: "$2b$10$F6R9T67FbpRzteqSxBaL.ui4TQ9ZKS/R3/2iPcn1JPhxVhC4N",
+    password: "$2b$10$3Shl.kj/1I/bjVAGfdfW7ep7akvzHBBUrKehh.WCqcvjvn6Txn5km",
     mnemonic:
       "symbol pull rhythm unfold vacant donkey stand drum ski social say dinner",
     publicKey: "5jq4oFeJHSWngGmAoHWg5Ang1o4B1NfGGa5dMFNpZDUz",
     privateKey:
       "2J1BCh5vy5aYzF7KQ485d5gFuxR14cfVSkD8R9vesq4HqQFJr1zHc3vrPALKFg-aagB72B8c3nAvVa3kFFc8cN",
+  },
+  {
+    username: "sanjay",
+    password: "$2b$10$XnUgHDAlG6wCQqJwKVXe.udfVrdVmcYThP0HLYkPjGhv22EuXyEya",
+    mnemonic:
+      "rebel shoe review column bring supreme during fruit uniform stem donate monkey",
+    publicKey: "E81S7SmmarSGa2Mizs1XzfSDxSNWLBiVdcK9NPSPtgCE",
+    privateKey:
+      "3bzHpLxBhQAGi1jviEnAQ9qTFxLUd7WWN8k9fQYQjCkpjpaUKyszEDBHMvYSVUohZ8i9UHxADbS9UAAYbyBGgqup",
   },
 ];
 

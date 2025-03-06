@@ -7,9 +7,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <AppWalletProvider>{children}</AppWalletProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

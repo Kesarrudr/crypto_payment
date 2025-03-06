@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import {
   asyncHandler,
+  CustomRequest,
   sendRespnse,
   StatusCode,
   StatusEnum,
@@ -8,14 +9,17 @@ import {
 import { AppError } from "../../utilis/funtions/AppError";
 
 const HealthCheckHandler = asyncHandler(
-  async (_req: Request, res: Response) => {
+  async (_req: CustomRequest, res: Response) => {
     let isHealthy: Boolean = true;
 
     if (!isHealthy) {
-      throw new AppError("Server is Not Fine ❌ ", StatusCode.ServerDownError);
+      throw new AppError(
+        "Server is Not Fine ❌ ",
+        StatusCode.SERVICE_UNAVAILABLE,
+      );
     }
 
-    sendRespnse(res, StatusCode.ok, StatusEnum.success, "Everything is Good👍");
+    sendRespnse(res, StatusCode.OK, StatusEnum.success, "Everything is Good👍");
   },
 );
 

@@ -1,0 +1,4 @@
+const USDC_TOKEN_ADDRESS =
+  "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU" as const;
+
+export { USDC_TOKEN_ADDRESS };

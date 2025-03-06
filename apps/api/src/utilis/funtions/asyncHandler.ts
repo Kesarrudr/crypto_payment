@@ -1,7 +1,14 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import { NextFunction, Response } from "express";
+import { CustomRequest } from "./zod";
 
-const asyncHandler = (reqHandler: RequestHandler) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+const asyncHandler = (
+  reqHandler: (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<void>,
+) => {
+  return (req: CustomRequest, res: Response, next: NextFunction) => {
     Promise.resolve(reqHandler(req, res, next)).catch((error) => {
       next(error);
     });

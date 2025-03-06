@@ -3,7 +3,8 @@ import { Account } from "@solana/spl-token";
 import { AppError } from "../funtions/AppError";
 import { getWalletDetails, WalletData } from "../funtions/generate_wallet";
 import { getHashPassword, StatusCode } from "../funtions/helperFunctions";
-import { MerchantDetialsType, RegisterMerchantType } from "../funtions/zod";
+import { RegisterMerchantType } from "../funtions/zod";
+import { USDC_TOKEN_ADDRESS } from "../Constants";
 
 const registerMerchant = async ({
   username,
@@ -79,34 +80,31 @@ const getMerchantDetails = async (useName: string) => {
   }
 };
 
-const associatedTokenAccountDetails = async ({
-  username,
-  publickey,
-  mint,
-}: MerchantDetialsType) => {
+const associatedTokenAccountDetails = async (
+  username: string,
+  publickey: string,
+) => {
   try {
-    const account = await prisma.associatedTokenAccount.findUniqueOrThrow({
+    const account = await prisma.associatedTokenAccount.findUnique({
       where: {
-        stableTokenMint_merchantUserName: {
-          stableTokenMint: mint,
-          merchantUserName: username,
-        },
+        merchantUserName: username,
         merchant: {
           publicKey: publickey,
         },
       },
       select: {
         accountAddress: true,
-        stableTokenMint: true,
+        tokenAddress: true,
       },
     });
 
     return account;
   } catch (error) {
+    console.log(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
         throw new AppError(
-          `Can't find account address of ${publickey} public key for this ${mint} mint`,
+          `Can't find account address of ${publickey} public key for this ${USDC_TOKEN_ADDRESS} mint`,
           StatusCode.BAD_REQUEST,
         );
       }
@@ -119,42 +117,6 @@ const associatedTokenAccountDetails = async ({
   }
 };
 
-const acceptedMint = async (mint: string) => {
-  try {
-    //TODO: have the TOKEN_SPL_PROGRAM also in the databse
-    const mintDetails = await prisma.stableToken.findUniqueOrThrow({
-      where: {
-        mint: mint,
-      },
-      select: {
-        mint: true,
-      },
-    });
-    return mintDetails;
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        throw new AppError(
-          `Can't find any STABLE TOKEN mint with ${mint} address`,
-          StatusCode.BAD_REQUEST,
-        );
-      }
-      throw new AppError(
-        "Some Prisma Error",
-        StatusCode.INTERNAL_SERVER_ERROR,
-        false,
-      );
-    } else {
-      console.log("Error form acceptedMint", error);
-      throw new AppError(
-        "DATA BASE ERROR",
-        StatusCode.SERVICE_UNAVAILABLE,
-        false,
-      );
-    }
-  }
-};
-
 const merchantKeysDetails = async (publicKey: string, username: string) => {
   try {
     const keyDetails = await prisma.merchant.findUniqueOrThrow({
@@ -163,9 +125,9 @@ const merchantKeysDetails = async (publicKey: string, username: string) => {
         publicKey: publicKey,
       },
       select: {
+        privateKey: true,
         username: true,
         publicKey: true,
-        privateKey: true,
       },
     });
     return keyDetails;
@@ -192,25 +154,22 @@ const merchantKeysDetails = async (publicKey: string, username: string) => {
 };
 
 const storeAssociatedAccount = async (
-  merchantUsername: string,
-  merchantPublicKey: string,
+  username: string,
+  publicKey: string,
   accountDetails: Account,
 ) => {
   try {
     return await prisma.associatedTokenAccount.upsert({
       where: {
-        stableTokenMint_merchantUserName: {
-          stableTokenMint: accountDetails.mint.toBase58(),
-          merchantUserName: merchantUsername,
-        },
+        merchantUserName: username,
         merchant: {
-          publicKey: merchantPublicKey,
+          publicKey: publicKey,
         },
       },
       create: {
         accountAddress: accountDetails.address.toBase58(),
-        stableTokenMint: accountDetails.mint.toBase58(),
-        merchantUserName: merchantUsername,
+        tokenAddress: accountDetails.mint.toBase58(),
+        merchantUserName: username,
       },
       update: {
         accountAddress: accountDetails.address.toBase58(),
@@ -219,7 +178,7 @@ const storeAssociatedAccount = async (
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       throw new AppError(
-        `Error while creating, updating the token account of ${merchantUsername} user for ${accountDetails.mint.toBase58()} mint`,
+        `Error while creating, updating the token account of ${username} user for ${accountDetails.mint.toBase58()} mint`,
         StatusCode.BAD_REQUEST,
       );
     } else {
@@ -231,22 +190,167 @@ const storeAssociatedAccount = async (
 
 const merchantUserName = async (username: string) => {
   try {
+    //TODO: make this query faster
     const merchantUsername = await prisma.merchant.findMany({
       where: {
-        username: username,
+        username: {
+          startsWith: username,
+          mode: "insensitive",
+        },
+      },
+      select: {
+        username: true,
+        publicKey: true,
+        AssociatedTokenAccount: {
+          select: {
+            accountAddress: true,
+          },
+        },
+      },
+      take: 20,
+    });
+
+    return merchantUsername;
+  } catch (error) {
+    throw new AppError(
+      "Error while Getting merchant ",
+      StatusCode.INTERNAL_SERVER_ERROR,
+      false,
+    );
+  }
+};
+
+const tokenDeatils = async (token: string) => {
+  try {
+    //TODO: make this query faster
+    const details = await prisma.swapableTokens.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              startsWith: token,
+              mode: "insensitive",
+            },
+          },
+          {
+            symbol: {
+              startsWith: token,
+              mode: "insensitive",
+            },
+          },
+          {
+            tokenAddress: {
+              startsWith: token,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      select: {
+        tokenAddress: true,
+        name: true,
+        decimals: true,
+        logoURL: true,
+        tags: true,
+        symbol: true,
+      },
+      take: 20,
+    });
+
+    return details;
+  } catch (error) {
+    console.log("error", error);
+    throw new AppError(
+      "Error while getting the token list",
+      StatusCode.INTERNAL_SERVER_ERROR,
+      false,
+    );
+  }
+};
+
+const merchantIDSearch = async (id: string, publicKey: string) => {
+  try {
+    const merchant = await prisma.merchant.findUnique({
+      where: {
+        id,
+        publicKey,
       },
       select: {
         username: true,
         publicKey: true,
       },
     });
-    return merchantUsername;
-  } catch (error) {}
+
+    if (!merchant) {
+      throw new AppError("Can't find this Merchant", StatusCode.BAD_REQUEST);
+    }
+
+    return merchant;
+  } catch (error) {
+    console.log("Error", error);
+    throw new AppError(
+      "Merchant ID Search Error",
+      StatusCode.INTERNAL_SERVER_ERROR,
+      false,
+    );
+  }
+};
+
+const getMerchantTx = async (username: string, publicKey: string) => {
+  try {
+    const tx = await prisma.merchant.findFirst({
+      where: {
+        username,
+        publicKey,
+      },
+      select: {
+        AssociatedTokenAccount: {
+          select: {
+            accountAddress: true,
+          },
+        },
+        MerchantTransaction: {
+          select: {
+            tokenAmount: true,
+            payerAddress: true,
+            Date: true,
+            Time: true,
+            signature: true,
+            USDTAmount: true,
+            SwapRate: true,
+            Status: true,
+            token: {
+              select: {
+                name: true,
+                symbol: true,
+                logoURL: true,
+                tokenAddress: true,
+              },
+            },
+          },
+          take: 20,
+        },
+      },
+    });
+
+    return tx;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new AppError("Can't get the tx details", StatusCode.BAD_REQUEST);
+    }
+    throw new AppError(
+      "Error getting merchant tx Details",
+      StatusCode.SERVICE_UNAVAILABLE,
+      false,
+    );
+  }
 };
 
 export {
+  getMerchantTx,
+  tokenDeatils,
+  merchantIDSearch,
   merchantUserName,
-  acceptedMint,
   associatedTokenAccountDetails,
   getMerchantDetails,
   merchantKeysDetails,

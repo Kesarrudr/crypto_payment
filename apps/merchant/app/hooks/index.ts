@@ -1,3 +1,2 @@
 export * from "./registerMechantHook";
-export * from "./loginMerchant";
-export * from "./createAccount";
+export * from "./merchanttx";

@@ -1,5 +1,6 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
-import { sendRespnse, StatusEnum } from "./helperFunctions";
+import { sendRespnse } from "./helperFunctions";
+import { StatusEnum } from "./zod";
 
 class AppError extends Error {
   public readonly statusCode: number;
@@ -25,7 +26,7 @@ const ErrorHandler: ErrorRequestHandler = (
   _next: NextFunction,
 ) => {
   //TODO: add a better Error logger
-  // console.log(error); //use Better error logger
+  console.log(error); //use Better error logger
 
   const message =
     error.isOperational && error.message

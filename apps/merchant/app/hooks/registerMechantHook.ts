@@ -1,22 +1,23 @@
-import { RegisterMerchantType } from "@repo/api";
-import axios from "axios";
+import {
+  RegisterMerchantDataType,
+  RegisterMerchantType,
+  SendResponseType,
+} from "@repo/api";
 import { useState } from "react";
+import { axiosPostRequest } from "@repo/axios-config";
 
-const usereigsterHook = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+const useRegisterHook = () => {
+  const [isLoading, setIsLoading] = useState(false);
 
-  const registerMerchant = async (userInputData: RegisterMerchantType) => {
+  const registerMerchant = async (
+    userInputData: RegisterMerchantType,
+  ): Promise<SendResponseType<RegisterMerchantDataType>> => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
-      const response = await axios.post(
-        "http://localhost:6969/api/v1/v2/user/signup",
-        userInputData,
-      );
-
-      return response.data;
-    } catch (error) {
-      //TODO: do error handling
+      return await axiosPostRequest<
+        RegisterMerchantType,
+        RegisterMerchantDataType
+      >("/merchant/signup", userInputData);
     } finally {
       setIsLoading(false);
     }
@@ -25,4 +26,4 @@ const usereigsterHook = () => {
   return { isLoading, registerMerchant };
 };
 
-export { usereigsterHook };
+export { useRegisterHook };

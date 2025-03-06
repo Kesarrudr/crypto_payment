@@ -1,26 +1,27 @@
 "use client";
-import { useState } from "react";
-import { RegisterMerchantType as UserDataInter } from "@repo/api";
-import { useLoginHook } from "../../hooks/loginMerchant";
-import { useMerchantContext } from "../../context";
-import { useRouter } from "next/navigation";
-import { mintDetails } from "../../constant";
-import { useCreateAccount } from "../../hooks";
 
-export default function page() {
+import { useAuthSession } from "@/context/session";
+import { RegisterMerchantType } from "@repo/api";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+export default function Page() {
   const router = useRouter();
 
-  const [userData, setUserData] = useState<UserDataInter>({
+  const [userData, setUserData] = useState<RegisterMerchantType>({
     username: "",
     password: "",
   });
-
-  const { isLoading, loginMerchant } = useLoginHook();
-
-  const [selectedMint, setSelectedMint] = useState("");
-  const { isLoading: createAccountLoading, createAccount } = useCreateAccount();
-  const { setMerchantData } = useMerchantContext();
-  const [showMintSelection, setShowMintSelection] = useState(false);
+  const { status } = useAuthSession();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  //
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/dashboard"); // Redirect if logged in
+    }
+  }, [status, router]);
 
   function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { id, value } = e.target;
@@ -28,27 +29,32 @@ export default function page() {
   }
 
   async function handleSubmit() {
-    //TODO: add mechant details context on this route and dashboard route
-    const response = await loginMerchant(userData);
-    if (response.status === "success") {
-      localStorage.setItem("token", response.data.AuthToken);
-      setMerchantData({
-        username: userData.username,
-        publicKey: response.data.WalletAddress,
-        mint: "",
-      });
+    setIsLoading(true);
 
-      console.log("set the auth token now choose your mint");
-      setShowMintSelection(true);
+    const res = await signIn("credentials", {
+      username: userData.username,
+      password: userData.password,
+      redirect: false,
+    });
+
+    setIsLoading(false);
+
+    if (res?.error) {
+      setError("Invalid username or password");
+    } else {
+      router.push("/dashboard");
     }
   }
-
-  //WARNING: show the mint to accept balance in the register route;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-6 rounded-lg shadow-lg w-80">
         <h2 className="text-xl font-semibold mb-4 text-center">Login</h2>
+
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-2">{error}</p>
+        )}
+
         <input
           id="username"
           type="text"
@@ -66,40 +72,13 @@ export default function page() {
           className="w-full p-2 mb-4 border border-gray-300 rounded"
         />
         <button
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:opacity-50"
           onClick={handleSubmit}
+          disabled={isLoading}
         >
-          Submit
+          {isLoading ? "Logging in..." : "Submit"}
         </button>
       </div>
-
-      {showMintSelection && (
-        <div>
-          <h3>Select a Mint</h3>
-          {mintDetails.map((mint) => (
-            <div key={mint.mintAddress}>
-              <input
-                type="radio"
-                id={mint.mintName}
-                name="mint"
-                value={mint.mintAddress}
-                onChange={() => setSelectedMint(mint.mintAddress)}
-              />
-              <label htmlFor={mint.mintName}>{mint.mintName}</label>
-            </div>
-          ))}
-          <button
-            onClick={async () => {
-              const response = await createAccount(selectedMint);
-              if (response?.status === 200) {
-                router.push("/dashboard");
-              }
-            }}
-          >
-            Create Account
-          </button>
-        </div>
-      )}
     </div>
   );
 }

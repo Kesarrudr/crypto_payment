@@ -1,25 +1,17 @@
-import {
-  createAssociatedTokenAccount,
-  getOrCreateAssociatedTokenAccount,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import { Connection, Keypair, PublicKey, Signer } from "@solana/web3.js";
 import bcrypt from "bcrypt";
 import bs58 from "bs58";
-import { Response } from "express";
+import { RequestHandler, Response } from "express";
 import jwt, { Secret } from "jsonwebtoken";
 import {
-  acceptedMint,
+  associatedTokenAccountDetails,
   merchantKeysDetails,
   storeAssociatedAccount,
 } from "../dataBase/database";
-import { MerchantDetialsType } from "./zod";
 import { AppError } from "./AppError";
-
-enum StatusEnum {
-  success = "success",
-  error = "error",
-}
+import { USDC_TOKEN_ADDRESS } from "../Constants";
+import { StatusEnum } from "./zod";
 
 enum StatusCode {
   OK = 200,
@@ -87,37 +79,41 @@ const generateToken = async ({ id, publicKey }: registeredUser) => {
 };
 
 const getNewAccount = async (
-  { username, publickey, mint }: MerchantDetialsType,
+  username: string,
+  publicKey: string,
   connection: Connection,
 ) => {
-  const mintDetails = await acceptedMint(mint);
+  const alreadyAccount = await associatedTokenAccountDetails(
+    username,
+    publicKey,
+  );
 
-  const keyDetails = await merchantKeysDetails(publickey, username);
+  if (alreadyAccount) {
+    return alreadyAccount;
+  }
+  const keyDetails = await merchantKeysDetails(publicKey, username);
 
   const account = await newAccount(
     connection,
     keyDetails.privateKey,
-    mintDetails.mint,
-    keyDetails.publicKey,
+    publicKey,
   );
 
-  await storeAssociatedAccount(
-    keyDetails.username,
-    keyDetails.publicKey,
-    account,
-  );
+  await storeAssociatedAccount(username, publicKey, account);
 
-  return account;
+  return {
+    account: account.address.toBase58(),
+    tokenAddress: account.mint.toBase58(),
+  };
 };
 
 const newAccount = async (
   connection: Connection,
   payerPrivateKey: string,
-  mint: string,
   owner: string,
 ) => {
   const payer: Signer = Keypair.fromSecretKey(bs58.decode(payerPrivateKey));
-  const mintKey: PublicKey = new PublicKey(mint);
+  const mintKey: PublicKey = new PublicKey(USDC_TOKEN_ADDRESS);
   const ownerKey: PublicKey = new PublicKey(owner);
   try {
     const account = await getOrCreateAssociatedTokenAccount(
@@ -129,14 +125,17 @@ const newAccount = async (
 
     return account;
   } catch (error) {
-    console.log(error);
     throw new AppError(
-      `Can't make account for ${mint} wallet for ${mint} mint`,
+      `Can't make account for ${owner} wallet for ${USDC_TOKEN_ADDRESS} mint`,
       StatusCode.CONFLICT,
       false,
     );
   }
 };
+
+const reqHandler = (handler: RequestHandler): RequestHandler[] => [
+  handler as RequestHandler,
+];
 
 export {
   checkPassword,
@@ -146,5 +145,5 @@ export {
   newAccount,
   sendRespnse,
   StatusCode,
-  StatusEnum,
+  reqHandler,
 };

@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { getMerchantUserName } from "../../router";
+import { getMerchantUserName, getTokenDetails } from "../../router";
 
 const router: Router = Router();
 
-router.route("/getUsername").get(getMerchantUserName);
+router.route("/getmerchant").get(getMerchantUserName);
+router.route("/getToken").get(getTokenDetails);
 
 export { router as UserRouter };

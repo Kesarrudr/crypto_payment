@@ -1,5 +1,5 @@
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -9,30 +9,71 @@ generator client {
 }
 
 model Merchant {
-  id                     String                   @id @default(cuid())
-  username               String                   @unique
+  id                     String                  @id @default(cuid())
+  username               String                  @unique
   password               String
-  mnemonic               String
-  publicKey              String                   @unique
-  privateKey             String
-  CreatedAt              DateTime                 @default(now())
-  AssociatedTokenAccount AssociatedTokenAccount[]
-}
+  mnemonic               String                  @db.VarChar(512)
+  publicKey              String                  @unique
+  privateKey             String                  @db.VarChar(512)
+  CreatedAt              DateTime                @default(now())
+  AssociatedTokenAccount AssociatedTokenAccount?
+  MerchantTransaction    MerchantTransaction[]
 
-model StableToken {
-  id                     String                   @id @default(cuid())
-  mint                   String                   @unique // Stable token (USDT, USDC)
-  AssociatedTokenAccount AssociatedTokenAccount[]
+  @@index([username])
 }
 
 model AssociatedTokenAccount {
-  id               String      @id @default(cuid())
-  accountAddress   String      @unique // Token account address on Solana
-  stableTokenMint  String // Ensures one account per stable token per merchant
-  stableToken      StableToken @relation(fields: [stableTokenMint], references: [mint])
-  merchantUserName String
-  merchant         Merchant    @relation(fields: [merchantUserName], references: [username])
-  CreatedAt        DateTime    @default(now())
+  id               String   @id @default(cuid())
+  accountAddress   String   @unique
+  tokenAddress     String
+  merchantUserName String   @unique
+  merchant         Merchant @relation(fields: [merchantUserName], references: [username])
+  CreatedAt        DateTime @default(now())
 
-  @@unique([stableTokenMint, merchantUserName])
+  @@index([merchantUserName, accountAddress])
+}
+
+model SwapableTokens {
+  id               String   @id @default(cuid())
+  tokenAddress     String   @unique
+  name             String
+  symbol           String
+  decimals         Int
+  logoURL          String
+  tags             String[]
+  tokenCreatedAt   String
+  freeze_authority String
+  mint_authority   String
+  tokenOwner       String
+
+  CreatedAt           DateTime              @default(now())
+  MerchantTransaction MerchantTransaction[]
+
+  @@index([tokenAddress, name, symbol])
+}
+
+model MerchantTransaction {
+  id               String   @id @default(cuid())
+  tokenAmount      BigInt
+  tokenAddress     String
+  Date             String
+  payerAddress     String
+  Time             String
+  signature        String   @unique
+  merchantUserName String
+  USDTAmount       Int
+  SwapRate         Int
+  Status           TxStatus
+
+  token    SwapableTokens @relation(fields: [tokenAddress], references: [tokenAddress])
+  merchant Merchant       @relation(fields: [merchantUserName], references: [username])
+
+  CreatedAt DateTime @default(now())
+
+  @@index([signature, merchantUserName, tokenAddress])
+}
+
+enum TxStatus {
+  failed
+  success
 }

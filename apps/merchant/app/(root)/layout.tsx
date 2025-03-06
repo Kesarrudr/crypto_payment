@@ -1,19 +1,24 @@
 "use client";
-import { ReactNode } from "react";
-import { MerchantContextProvider } from "../context";
 
-interface LayoutProps {
-  children: ReactNode;
-}
+import "../globals.css";
+import { Inter } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
+import { SessionProviderCustom } from "@/context/session";
 
-const Layout = ({ children }: LayoutProps) => {
+const inter = Inter({ subsets: ["latin"] });
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <MerchantContextProvider>
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-        {children}
-      </div>
-    </MerchantContextProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <SessionProvider>
+          <SessionProviderCustom>{children}</SessionProviderCustom>
+        </SessionProvider>
+      </body>
+    </html>
   );
-};
-
-export default Layout;
+}
