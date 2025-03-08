@@ -1,7 +1,7 @@
 import { SendResponseType } from "@repo/api";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getSession, signOut } from "next-auth/react";
-import { notification } from "./notification";
+import { showErrorNotification } from "@repo/merchant";
 
 const axiosInstance = axios.create({
   baseURL: process.env.baseURL || "http://localhost:6969/api/v1",
@@ -17,7 +17,7 @@ axiosInstance.interceptors.request.use(async (config) => {
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
+  async (error: AxiosError<SendResponseType<any>>) => {
     if (error.response?.status === 401) {
       signOut().then(() => {
         window.location.href = "/signin";
@@ -43,11 +43,13 @@ const axiosGetRequest = async <TResponse>(
 
     return response.data;
   } catch (error) {
-    const message = (error as AxiosError<{ message: string }>).response?.data
-      ?.message;
+    const message =
+      (error as AxiosError<{ message: string }>).response?.data?.message ||
+      "Some thing is wrong";
 
-    notification(`Error while fetching  ${url}. ${message ?? " "}`, "error");
+    const statusCode = (error as AxiosError).status || 500;
 
+    showErrorNotification(message, statusCode);
     throw error;
   }
 };
@@ -66,12 +68,12 @@ const axiosPostRequest = async <TRequest, TResponse>(
 
     return response.data;
   } catch (error) {
-    const message = (error as AxiosError<{ message: string }>).response?.data
-      ?.message;
-    //WARNING: logging error message here on the server only error is not propergate to the client
-    // console.log("message", message);
+    const message =
+      (error as AxiosError<{ message: string }>).response?.data?.message ||
+      "Some thing wrong";
+    const statusCode = (error as AxiosError).status || 500;
 
-    notification(`Error while posting ${url}. ${message ?? ""}`, "error");
+    showErrorNotification(message, statusCode);
 
     throw error;
   }

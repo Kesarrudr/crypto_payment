@@ -22,6 +22,12 @@ const RegisterMerchantSchema = z.object({
     .max(10, "Password can be a maximum of 10 characters")
     .nonempty("Password is required"),
 });
+const LoginMerchantSchema = z
+  .object({
+    username: z.string().nonempty("Username can't be empty"),
+    password: z.string().nonempty("Password is required"),
+  })
+  .strict();
 
 const MerchantUserNameQuery = z
   .object({
@@ -73,9 +79,11 @@ type NewAccountDataType = Awaited<ReturnType<typeof getNewAccount>>;
 type GetMerchantDetailsType = Awaited<ReturnType<typeof merchantUserName>>;
 type GetTokenDeatailsDataType = Awaited<ReturnType<typeof tokenDeatils>>;
 type MerchantTxDataType = Awaited<ReturnType<typeof getMerchantTx>>;
+type LoginMerchantType = z.infer<typeof LoginMerchantSchema>;
 
 // Export schemas
 export {
+  LoginMerchantSchema,
   RegisterMerchantSchema,
   MerchantUserNameQuery,
   tokenDetailsSerchQuery,
@@ -93,4 +101,5 @@ export {
   type GetTokenDeatailsDataType,
   type SendResponseType,
   type MerchantTxDataType,
+  type LoginMerchantType,
 };
