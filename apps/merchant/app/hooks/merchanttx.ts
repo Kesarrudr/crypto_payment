@@ -1,5 +1,5 @@
+import { axiosGetRequest } from "@/axios-config/axios";
 import { MerchantTxDataType, SendResponseType } from "@repo/api";
-import { axiosGetRequest } from "@repo/axios-config";
 import { useState } from "react";
 
 const useMerchantTx = () => {

@@ -11,6 +11,8 @@ import {
   getMerchantDetails,
   getMerchantTx,
   getNewAccount,
+  LoginMerchantSchema,
+  LoginMerchantType,
   registerMerchant,
   RegisterMerchantSchema,
   RegisterMerchantType,
@@ -50,8 +52,8 @@ const RegisterMerchant = asyncHandler(
 const loginMerchant = asyncHandler(
   async (req: CustomRequest, res: Response) => {
     const body = req.body;
-    const parseData: SafeParseReturnType<any, RegisterMerchantType> =
-      RegisterMerchantSchema.safeParse(body);
+    const parseData: SafeParseReturnType<any, LoginMerchantType> =
+      LoginMerchantSchema.safeParse(body);
 
     if (!parseData.success) {
       throw new AppError(

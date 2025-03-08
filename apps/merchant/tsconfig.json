@@ -6,7 +6,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "strict": true
   },
   "include": [
     "next-env.d.ts",

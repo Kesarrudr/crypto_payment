@@ -1,7 +1,8 @@
+import { LoginMerchantDataType, SendResponseType } from "@repo/api";
 import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { axiosPostRequest } from "@repo/axios-config";
-import { LoginMerchantDataType, SendResponseType, StatusEnum } from "@repo/api";
+import { axiosPostRequest } from "./axios-config/axios";
+import { AxiosError } from "axios";
 
 const authHandlers = NextAuth({
   providers: [
@@ -26,7 +27,7 @@ const authHandlers = NextAuth({
               password: credentials.password,
             });
 
-          if (response.status !== StatusEnum.success || !response.data) {
+          if (response.status !== "success" || !response.data) {
             throw new Error("Invalid credentials");
           }
 
@@ -37,7 +38,10 @@ const authHandlers = NextAuth({
             authToken: response.data.AuthToken,
           } as User;
         } catch (error) {
-          throw new Error("Failed to authenticate");
+          if (error instanceof AxiosError) {
+            throw new Error(error.response?.data.message);
+          }
+          throw new Error("Something is Wrong");
         }
       },
     }),

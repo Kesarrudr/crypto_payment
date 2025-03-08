@@ -1,10 +1,10 @@
+import { axiosPostRequest } from "@/axios-config/axios";
 import {
   RegisterMerchantDataType,
   RegisterMerchantType,
   SendResponseType,
 } from "@repo/api";
 import { useState } from "react";
-import { axiosPostRequest } from "@repo/axios-config";
 
 const useRegisterHook = () => {
   const [isLoading, setIsLoading] = useState(false);
