@@ -1,13 +1,17 @@
+import "../global.css";
+
 import AppWalletProvider from "../context/AppWalletProvider";
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AppWalletProvider>{children}</AppWalletProvider>
+      </body>
     </html>
   );
 }

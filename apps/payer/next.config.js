@@ -5,4 +5,12 @@ module.exports = {
   parserOptions: {
     project: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**", // Allow images from any domain
+      },
+    ],
+  },
 };

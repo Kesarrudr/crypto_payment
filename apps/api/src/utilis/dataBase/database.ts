@@ -1,10 +1,10 @@
 import { Prisma, prisma } from "@repo/database";
 import { Account } from "@solana/spl-token";
-import { AppError } from "../funtions/AppError";
-import { getWalletDetails, WalletData } from "../funtions/generate_wallet";
-import { getHashPassword, StatusCode } from "../funtions/helperFunctions";
-import { RegisterMerchantType } from "../funtions/zod";
-import { USDC_TOKEN_ADDRESS } from "../Constants";
+import { AppError } from "../funtions/AppError.js";
+import { getWalletDetails, WalletData } from "../funtions/generate_wallet.js";
+import { getHashPassword, StatusCode } from "../funtions/helperFunctions.js";
+import { RegisterMerchantType, TransactionType } from "../funtions/zod.js";
+import { USDC_TOKEN_ADDRESS } from "../Constants/index.js";
 
 const registerMerchant = async ({
   username,
@@ -174,6 +174,10 @@ const storeAssociatedAccount = async (
       update: {
         accountAddress: accountDetails.address.toBase58(),
       },
+      select: {
+        accountAddress: true,
+        tokenAddress: true,
+      },
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -296,7 +300,11 @@ const merchantIDSearch = async (id: string, publicKey: string) => {
   }
 };
 
-const getMerchantTx = async (username: string, publicKey: string) => {
+const getMerchantTx = async (
+  username: string,
+  publicKey: string,
+  skip: number,
+) => {
   try {
     const tx = await prisma.merchant.findFirst({
       where: {
@@ -304,11 +312,6 @@ const getMerchantTx = async (username: string, publicKey: string) => {
         publicKey,
       },
       select: {
-        AssociatedTokenAccount: {
-          select: {
-            accountAddress: true,
-          },
-        },
         MerchantTransaction: {
           select: {
             tokenAmount: true,
@@ -325,16 +328,23 @@ const getMerchantTx = async (username: string, publicKey: string) => {
                 symbol: true,
                 logoURL: true,
                 tokenAddress: true,
+                decimals: true,
               },
             },
           },
+          skip: skip * 20,
           take: 20,
+          orderBy: {
+            Date: "desc",
+          },
         },
+        _count: true,
       },
     });
 
     return tx;
   } catch (error) {
+    console.log(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       throw new AppError("Can't get the tx details", StatusCode.BAD_REQUEST);
     }
@@ -346,7 +356,62 @@ const getMerchantTx = async (username: string, publicKey: string) => {
   }
 };
 
+const getBalance = async (username: string, publicKey: string) => {
+  try {
+    const balance = await prisma.merchant.findUnique({
+      where: {
+        username,
+        publicKey,
+      },
+      select: {
+        Balance: true,
+      },
+    });
+
+    return balance;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new AppError("Can't get the balance", StatusCode.BAD_REQUEST);
+    }
+    throw new AppError(
+      "Error fetching the balance",
+      StatusCode.SERVICE_UNAVAILABLE,
+      false,
+    );
+  }
+};
+
+const transactionSave = async (txData: TransactionType, rate: number) => {
+  try {
+    await prisma.merchantTransaction.create({
+      data: {
+        tokenAmount: BigInt(txData.tokenAmount),
+        tokenAddress: txData.tokenAddress,
+        Date: txData.date,
+        Time: txData.time,
+        signature: txData.signature,
+        USDTAmount: Number(txData.USDCAmount),
+        payerAddress: txData.payerAddress,
+        merchantUserName: txData.merchantUserName,
+        Status: txData.Status,
+        SwapRate: rate,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new AppError("Can't save the tx", StatusCode.BAD_REQUEST);
+    }
+    throw new AppError(
+      "Error saving tx",
+      StatusCode.SERVICE_UNAVAILABLE,
+      false,
+    );
+  }
+};
+
 export {
+  transactionSave,
+  getBalance,
   getMerchantTx,
   tokenDeatils,
   merchantIDSearch,

@@ -1,6 +1,6 @@
 "use client";
-
 import "../globals.css";
+
 import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { SessionProviderCustom } from "@/context/session";
@@ -12,7 +12,7 @@ import { useEffect } from "react";
 const inter = Inter({ subsets: ["latin"] });
 
 function GlobalErrorHandler() {
-  const { triggerError } = useError(); // ✅ Now it's inside <ErrorProvider>
+  const { triggerError } = useError();
 
   useEffect(() => {
     setGlobalErrorHandler(triggerError);

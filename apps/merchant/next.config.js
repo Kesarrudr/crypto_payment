@@ -1,8 +1,13 @@
-/** @type {import("eslint").Linter.Config} */
-module.exports = {
-  extends: ["@repo/eslint-config/next.js"],
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    project: true,
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**", // Allow images from any domain
+      },
+    ],
   },
 };
+
+module.exports = nextConfig;

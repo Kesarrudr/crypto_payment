@@ -3,12 +3,14 @@ import z from "zod";
 import { Request } from "express";
 import {
   associatedTokenAccountDetails,
+  getBalance,
   getMerchantTx,
   merchantUserName,
   registerMerchant,
   tokenDeatils,
-} from "../dataBase";
-import { getNewAccount } from "./helperFunctions";
+} from "../dataBase/index.js";
+import { getNewAccount } from "./helperFunctions.js";
+import { TxStatus } from "@repo/database";
 
 // Schema for registering a merchant
 const RegisterMerchantSchema = z.object({
@@ -41,6 +43,29 @@ const tokenDetailsSerchQuery = z
   })
   .strict("not a valid query");
 
+const txSkipQuerySchema = z.object({
+  skip: z
+    .string()
+    .regex(/^\d+$/, "Must be a string containing only numbers")
+    .optional(),
+});
+
+const TransactionSchema = z
+  .object({
+    tokenAmount: z.string().nonempty("Can't be empty"),
+    tokenAddress: z.string().nonempty("token Address not provided"),
+    payerAddress: z.string().nonempty("Payer Address missing"),
+    signature: z.string().nonempty("signature required"),
+    USDCAmount: z.string().nonempty("amount needed"),
+    Status: z.nativeEnum(TxStatus),
+    date: z.string().nonempty("Date Required"),
+    time: z.string().nonempty("Time required"),
+    merchantUserName: z.string().nonempty("username required"),
+  })
+  .strict("Not a valid body");
+
+type TransactionType = z.infer<typeof TransactionSchema>;
+type txSkipQueryData = z.infer<typeof txSkipQuerySchema>;
 type merchantUserNameType = z.infer<typeof MerchantUserNameQuery>;
 type tokenDetailsType = z.infer<typeof tokenDetailsSerchQuery>;
 type RegisterMerchantType = z.infer<typeof RegisterMerchantSchema>;
@@ -79,7 +104,13 @@ type NewAccountDataType = Awaited<ReturnType<typeof getNewAccount>>;
 type GetMerchantDetailsType = Awaited<ReturnType<typeof merchantUserName>>;
 type GetTokenDeatailsDataType = Awaited<ReturnType<typeof tokenDeatils>>;
 type MerchantTxDataType = Awaited<ReturnType<typeof getMerchantTx>>;
+
+type MerchantTransactionType =
+  NonNullable<MerchantTxDataType>["MerchantTransaction"][number];
+type MerchantReturnDataType = NonNullable<GetMerchantDetailsType>[number];
+type TokenReturnDatatype = NonNullable<GetTokenDeatailsDataType>[number];
 type LoginMerchantType = z.infer<typeof LoginMerchantSchema>;
+type GetMerchantBalance = Awaited<ReturnType<typeof getBalance>>;
 
 // Export schemas
 export {
@@ -87,7 +118,12 @@ export {
   RegisterMerchantSchema,
   MerchantUserNameQuery,
   tokenDetailsSerchQuery,
+  txSkipQuerySchema,
+  TransactionSchema,
   StatusEnum,
+  type TokenReturnDatatype,
+  type GetMerchantBalance,
+  type MerchantReturnDataType,
   type tokenDetailsType,
   type merchantUserNameType,
   type RegisterMerchantType,
@@ -102,4 +138,7 @@ export {
   type SendResponseType,
   type MerchantTxDataType,
   type LoginMerchantType,
+  type txSkipQueryData,
+  type MerchantTransactionType,
+  type TransactionType,
 };

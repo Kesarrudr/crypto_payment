@@ -1,12 +1,12 @@
 import { Response } from "express";
 import {
+  AppError,
   asyncHandler,
   CustomRequest,
   sendRespnse,
   StatusCode,
   StatusEnum,
-} from "../../utilis";
-import { AppError } from "../../utilis/funtions/AppError";
+} from "../../utilis/index.js";
 
 const HealthCheckHandler = asyncHandler(
   async (_req: CustomRequest, res: Response) => {

@@ -5,13 +5,16 @@ import {
   merchantUserName,
   MerchantUserNameQuery,
   merchantUserNameType,
+  saveTx,
   sendRespnse,
   StatusCode,
   StatusEnum,
   tokenDeatils,
   tokenDetailsSerchQuery,
   tokenDetailsType,
-} from "../../utilis";
+  TransactionSchema,
+  TransactionType,
+} from "../../utilis/index.js";
 import { SafeParseReturnType } from "zod";
 
 const getMerchantUserName = asyncHandler(
@@ -66,4 +69,16 @@ const getTokenDetails = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
-export { getMerchantUserName, getTokenDetails };
+const payerTransaction = asyncHandler(async (req: Request, res: Response) => {
+  const data = req.body;
+  const parseData: SafeParseReturnType<any, TransactionType> =
+    TransactionSchema.safeParse(data);
+  if (!parseData.success) {
+    throw new AppError("Data not valid", StatusCode.BAD_REQUEST, false);
+  }
+
+  await saveTx(parseData.data);
+  sendRespnse(res, StatusCode.OK, StatusEnum.success, "Save tx");
+});
+
+export { getMerchantUserName, getTokenDetails, payerTransaction };

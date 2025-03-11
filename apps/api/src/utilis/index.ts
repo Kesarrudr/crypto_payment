@@ -1,3 +1,3 @@
-export * from "./Constants/index";
-export * from "./funtions/index";
-export * from "./dataBase/index";
+export * from "./Constants/index.js";
+export * from "./funtions/index.js";
+export * from "./dataBase/index.js";

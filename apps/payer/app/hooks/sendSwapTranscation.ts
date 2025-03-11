@@ -19,12 +19,14 @@ const useSendSwapTransaction = () => {
 
     try {
       setIsLoading(true);
+
       const response = await axios.post(
         "https://api.jup.ag/swap/v1/swap",
         {
           quoteResponse: quote,
           userPublicKey: publicKey.toBase58(),
           destinationTokenAccount: merchatUSDCTokenAccount,
+          wrapAndUnwrapSol: true,
         },
         {
           headers: { "Content-Type": "application/json" },
@@ -39,8 +41,8 @@ const useSendSwapTransaction = () => {
       await signTransaction(transaction);
 
       const latestBlockHash = await connection.getLatestBlockhash();
-
       const rawTransaction = transaction.serialize();
+
       const txid = await connection.sendRawTransaction(rawTransaction, {
         skipPreflight: true,
         maxRetries: 2,
@@ -54,7 +56,7 @@ const useSendSwapTransaction = () => {
 
       return txid;
     } catch (error) {
-      console.error("Error during swap transaction:");
+      console.error("Error during swap transaction:", error);
       return;
     } finally {
       setIsLoading(false);

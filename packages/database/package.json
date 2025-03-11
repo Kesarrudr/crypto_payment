@@ -11,6 +11,7 @@
     "db:seed": "tsx src/seed.ts",
     "dev": "tsup src/* --watch",
     "db:tokenSeed": "tsx src/tokenSeed.ts",
+    "db:txSeed": "tsx src/txSeed.ts",
     "format": "prisma format",
     "generate": "prisma generate",
     "lint": "eslint . --max-warnings 0",

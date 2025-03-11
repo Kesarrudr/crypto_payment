@@ -1,12 +1,13 @@
 import { RequestHandler, Router } from "express";
-import { MerchantAuthMiddleWare } from "../../middleWare";
+import { MerchantAuthMiddleWare } from "../../middleWare/index.js";
 import {
   RegisterMerchant,
   loginMerchant,
   getAssociatedAccount,
   makeAssociatedAccount,
   merchantTranscations,
-} from "../../router";
+  merchantBalance,
+} from "../../router/index.js";
 
 const router: Router = Router();
 const authMiddleWare = [MerchantAuthMiddleWare as RequestHandler];
@@ -25,5 +26,9 @@ router
 router
   .route("/transaction")
   .get(...authMiddleWare, merchantTranscations as RequestHandler);
+
+router
+  .route("/balance")
+  .get(...authMiddleWare, merchantBalance as RequestHandler);
 
 export { router as MerchantRouter };

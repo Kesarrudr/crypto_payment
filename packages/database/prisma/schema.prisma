@@ -4,17 +4,20 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/client"
+  provider      = "prisma-client-js"
+  output        = "../generated/client"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "linux-musl"]
 }
 
 model Merchant {
-  id                     String                  @id @default(cuid())
-  username               String                  @unique
-  password               String
-  mnemonic               String                  @db.VarChar(512)
-  publicKey              String                  @unique
-  privateKey             String                  @db.VarChar(512)
+  id         String @id @default(cuid())
+  username   String @unique
+  password   String
+  mnemonic   String @db.VarChar(512)
+  publicKey  String @unique
+  privateKey String @db.VarChar(512)
+  Balance    BigInt @default(0)
+
   CreatedAt              DateTime                @default(now())
   AssociatedTokenAccount AssociatedTokenAccount?
   MerchantTransaction    MerchantTransaction[]
@@ -44,7 +47,7 @@ model SwapableTokens {
   tokenCreatedAt   String
   freeze_authority String
   mint_authority   String
-  tokenOwner       String
+  tokenOwner       String //TOKEN PROGRAM 
 
   CreatedAt           DateTime              @default(now())
   MerchantTransaction MerchantTransaction[]

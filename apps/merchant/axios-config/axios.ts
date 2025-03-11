@@ -67,7 +67,7 @@ const axiosGetRequest = async <TResponse>(
 
 const axiosPostRequest = async <TRequest, TResponse>(
   url: string,
-  data: TRequest,
+  data?: TRequest,
   config?: AxiosRequestConfig,
 ): Promise<SendResponseType<TResponse>> => {
   const response = await axiosInstance.post<SendResponseType<TResponse>>(

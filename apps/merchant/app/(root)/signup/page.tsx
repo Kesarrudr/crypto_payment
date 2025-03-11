@@ -25,10 +25,17 @@ import { StatusEnum, ValidationErrors } from "@/types/types";
 import { Download, Lock, Shield } from "lucide-react";
 
 import LoadingOverlay from "@/components/loading-overlay";
+import { useAuthSession } from "@/context/session";
 
 export default function IndexPage() {
+  const { status } = useAuthSession();
+
   const router = useRouter();
 
+  //WARNING:
+  if (status === "authenticated") {
+    router.push("/dashboard");
+  }
   const { isLoading, registerMerchant } = useRegisterHook();
 
   const [inputData, setInputData] = useState<InputDataType>({
@@ -41,7 +48,6 @@ export default function IndexPage() {
   const [registrationSuccess, setRegistrationSuccess] =
     useState<boolean>(false);
 
-  const [status, setStatus] = useState<StatusEnum>(StatusEnum.idle);
   const [registrationData, setRegistrationData] =
     useState<RegisterMerchantDataType>({} as RegisterMerchantDataType);
   const [mnemonicCopied, setMnemonicCopied] = useState(false);
@@ -90,19 +96,12 @@ export default function IndexPage() {
     // If there are errors, don't submit
     if (Object.keys(newErrors).length > 0) return;
 
-    try {
-      const response: SendResponseType<RegisterMerchantDataType> =
-        await registerMerchant(inputData);
+    const response: SendResponseType<RegisterMerchantDataType> =
+      await registerMerchant(inputData);
 
-      if (response.status === StatusEnum.success) {
-        setStatus(StatusEnum.success);
-        setRegistrationSuccess(true);
-        setRegistrationData(response.data);
-      } else {
-        setStatus(StatusEnum.error);
-      }
-    } catch (error) {
-      setStatus(StatusEnum.error);
+    if (response.status === StatusEnum.success) {
+      setRegistrationSuccess(true);
+      setRegistrationData(response.data);
     }
   }
 

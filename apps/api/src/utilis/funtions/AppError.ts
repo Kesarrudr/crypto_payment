@@ -1,6 +1,6 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
-import { sendRespnse } from "./helperFunctions";
-import { StatusEnum } from "./zod";
+import { sendRespnse } from "./helperFunctions.js";
+import { StatusEnum } from "./zod.js";
 
 class AppError extends Error {
   public readonly statusCode: number;

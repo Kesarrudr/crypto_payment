@@ -1,7 +1,7 @@
 import cors from "cors";
-import express, { Express } from "express";
-import { ErrorHandler } from "./utilis";
-import { V1Router } from "./version";
+import express, { Express } from "express/index.js";
+import { ErrorHandler } from "./utilis/index.js";
+import { V1Router } from "./version/index.js";
 
 //TODO: add the return types fo the server response also
 const createServer = (): Express => {

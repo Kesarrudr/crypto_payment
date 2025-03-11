@@ -21,6 +21,11 @@ export default function Page() {
   });
   const { status } = useAuthSession();
 
+  //WARNING: Should be a protected route
+  if (status === "authenticated") {
+    router.push("/dashboard");
+  }
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});

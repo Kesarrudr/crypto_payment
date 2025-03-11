@@ -1,4 +1,8 @@
-import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import {
+  getOrCreateAssociatedTokenAccount,
+  TokenAccountNotFoundError,
+  TokenInvalidAccountOwnerError,
+} from "@solana/spl-token";
 import { Connection, Keypair, PublicKey, Signer } from "@solana/web3.js";
 import bcrypt from "bcrypt";
 import bs58 from "bs58";
@@ -8,10 +12,11 @@ import {
   associatedTokenAccountDetails,
   merchantKeysDetails,
   storeAssociatedAccount,
-} from "../dataBase/database";
-import { AppError } from "./AppError";
-import { USDC_TOKEN_ADDRESS } from "../Constants";
-import { StatusEnum } from "./zod";
+  transactionSave,
+} from "../dataBase/database.js";
+import { AppError } from "./AppError.js";
+import { USDC_TOKEN_ADDRESS } from "../Constants/index.js";
+import { StatusEnum, TransactionType } from "./zod.js";
 
 enum StatusCode {
   OK = 200,
@@ -69,7 +74,7 @@ const checkPassword = async (
 const generateToken = async ({ id, publicKey }: registeredUser) => {
   const token = jwt.sign(
     { id: id, publicKey: publicKey },
-    process.env.JWTSECRET || ("JWTSECRET" as Secret),
+    process.env.JWT_SECRET as Secret,
     {
       expiresIn: "1week",
     },
@@ -99,12 +104,9 @@ const getNewAccount = async (
     publicKey,
   );
 
-  await storeAssociatedAccount(username, publicKey, account);
+  const details = await storeAssociatedAccount(username, publicKey, account);
 
-  return {
-    account: account.address.toBase58(),
-    tokenAddress: account.mint.toBase58(),
-  };
+  return details;
 };
 
 const newAccount = async (
@@ -125,6 +127,15 @@ const newAccount = async (
 
     return account;
   } catch (error) {
+    if (
+      error instanceof TokenAccountNotFoundError ||
+      error instanceof TokenInvalidAccountOwnerError
+    ) {
+      throw new AppError(
+        "Don't have enough sol to make a new Account.",
+        StatusCode.NOT_FOUND,
+      );
+    }
     throw new AppError(
       `Can't make account for ${owner} wallet for ${USDC_TOKEN_ADDRESS} mint`,
       StatusCode.CONFLICT,
@@ -133,11 +144,17 @@ const newAccount = async (
   }
 };
 
+const saveTx = async (txData: TransactionType) => {
+  const swapRate = Number(txData.USDCAmount) / Number(txData.tokenAmount);
+  await transactionSave(txData, swapRate);
+};
+
 const reqHandler = (handler: RequestHandler): RequestHandler[] => [
   handler as RequestHandler,
 ];
 
 export {
+  saveTx,
   checkPassword,
   generateToken,
   getHashPassword,

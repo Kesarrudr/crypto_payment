@@ -12,8 +12,8 @@ const useRegisterHook = () => {
   const registerMerchant = async (
     userInputData: RegisterMerchantType,
   ): Promise<SendResponseType<RegisterMerchantDataType>> => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       return await axiosPostRequest<
         RegisterMerchantType,
         RegisterMerchantDataType

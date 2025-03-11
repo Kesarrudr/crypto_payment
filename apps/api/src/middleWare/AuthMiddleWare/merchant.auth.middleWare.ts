@@ -6,7 +6,7 @@ import {
   merchantIDSearch,
   StatusCode,
   TokenData,
-} from "../../utilis";
+} from "../../utilis/index.js";
 
 import jwt, { Secret } from "jsonwebtoken";
 
@@ -20,7 +20,7 @@ const MerchantAuthMiddleWare = asyncHandler(
 
     //TODO: can make this more secure
     try {
-      jwt.verify(token, process.env.JWTSECRET || ("JWTSECRET" as Secret));
+      jwt.verify(token, process.env.JWT_SECRET as Secret);
 
       const decode = jwt.decode(token) as TokenData | null;
 

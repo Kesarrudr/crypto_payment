@@ -1,5 +1,6 @@
-import axios from "axios";
+import { GetMerchantDetailsType, StatusEnum } from "@repo/api";
 import { useState } from "react";
+import { axiosGetRequest } from "../../axios-config/config";
 
 const useMerchantSearchQuery = () => {
   //TODO: currenty not showing the associated token account
@@ -11,15 +12,13 @@ const useMerchantSearchQuery = () => {
 
     try {
       setIsLoading(true);
-      const response = await axios.get(
-        `http://localhost:6969/api/v1/user/getmerchant?username=${name}`,
+      const response = await axiosGetRequest<GetMerchantDetailsType>(
+        `user/merchant?username=${name}`,
       );
 
-      if (response.status === 200) {
-        return response.data.data;
+      if (response.status === StatusEnum.success) {
+        return response.data;
       }
-    } catch (error) {
-      console.error("Error fetching merchant details", error);
     } finally {
       setIsLoading(false);
     }

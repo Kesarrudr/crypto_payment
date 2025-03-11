@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express";
-import { CustomRequest } from "./zod";
+import { CustomRequest } from "./zod.js";
 
 const asyncHandler = (
   reqHandler: (

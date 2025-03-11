@@ -3,7 +3,7 @@ import {
   HealthCheckController,
   MerchantRouter,
   UserRouter,
-} from "../../controller";
+} from "../../controller/index.js";
 
 const router: Router = Router();
 

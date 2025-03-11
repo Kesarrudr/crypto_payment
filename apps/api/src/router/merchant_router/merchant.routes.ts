@@ -1,4 +1,5 @@
-import { clusterApiUrl, Connection } from "@solana/web3.js";
+import "dotenv/config";
+import { Connection } from "@solana/web3.js";
 import { Response } from "express";
 import { SafeParseReturnType } from "zod";
 import {
@@ -8,6 +9,7 @@ import {
   checkPassword,
   CustomRequest,
   generateToken,
+  getBalance,
   getMerchantDetails,
   getMerchantTx,
   getNewAccount,
@@ -19,10 +21,14 @@ import {
   sendRespnse,
   StatusCode,
   StatusEnum,
-} from "../../utilis";
+  txSkipQueryData,
+  txSkipQuerySchema,
+} from "../../utilis/index.js";
 
 //TODO: make this a package dependency so that both frontend and backend and use this
-const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+
+console.log("evn", process.env.RPC);
+const connection = new Connection(process.env.RPC as string, "confirmed");
 
 const RegisterMerchant = asyncHandler(
   async (req: CustomRequest, res: Response) => {
@@ -118,8 +124,25 @@ const makeAssociatedAccount = asyncHandler(
 
 const merchantTranscations = asyncHandler(
   async (req: CustomRequest, res: Response) => {
+    const queryData = req.query;
+
+    const parseData: SafeParseReturnType<any, txSkipQueryData> =
+      txSkipQuerySchema.safeParse(queryData);
+
+    if (!parseData.success) {
+      throw new AppError(
+        parseData.error.errors[0].message,
+        StatusCode.BAD_REQUEST,
+      );
+    }
     const { username, publicKey } = req.merchantData;
-    const tx = await getMerchantTx(username, publicKey);
+
+    const tx = await getMerchantTx(
+      username,
+      publicKey,
+      Number(parseData.data.skip) || 0,
+    );
+
     sendRespnse(
       res,
       StatusCode.OK,
@@ -130,7 +153,24 @@ const merchantTranscations = asyncHandler(
   },
 );
 
+const merchantBalance = asyncHandler(
+  async (req: CustomRequest, res: Response) => {
+    const { username, publicKey } = req.merchantData;
+
+    const balance = await getBalance(username, publicKey);
+
+    sendRespnse(
+      res,
+      StatusCode.OK,
+      StatusEnum.success,
+      `Wallet ${publicKey}`,
+      balance,
+    );
+  },
+);
+
 export {
+  merchantBalance,
   merchantTranscations,
   loginMerchant,
   RegisterMerchant,
