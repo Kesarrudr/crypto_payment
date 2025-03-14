@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && cp -r .next/static .next/standalone/apps/merchant/.next/",
     "start": "next start",
     "lint": "eslint . --max-warnings 0"
   },
@@ -31,7 +31,6 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.2.1",
     "@repo/api": "workspace:*",
-    "@repo/database": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^20.17.22",

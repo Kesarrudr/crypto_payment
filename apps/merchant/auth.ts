@@ -66,6 +66,8 @@ const authHandlers = NextAuth({
   pages: {
     signIn: "/signin",
   },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: true,
 });
 
 export { authHandlers as handlers };

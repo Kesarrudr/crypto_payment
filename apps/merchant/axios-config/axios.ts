@@ -1,6 +1,6 @@
+import { SendResponseType } from "@repo/api";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getSession, signOut } from "next-auth/react";
-import { SendResponseType } from "@repo/api";
 
 let globalErrorHandler: ((message: string, statusCode: number) => void) | null =
   null;
@@ -10,7 +10,7 @@ const setGlobalErrorHandler = (handler: typeof globalErrorHandler) => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: process.env.baseURL || "http://localhost:6969/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_BaseURL as string,
 });
 
 // Request Interceptor: Attaching Auth Token
@@ -49,7 +49,7 @@ axiosInstance.interceptors.response.use(
       globalErrorHandler(message, statusCode);
     }
 
-    return Promise.reject(error);
+    return Promise.resolve(error);
   },
 );
 
@@ -75,6 +75,9 @@ const axiosPostRequest = async <TRequest, TResponse>(
     data,
     config,
   );
+  if (response instanceof AxiosError) {
+    return response.response?.data;
+  }
   return response.data;
 };
 

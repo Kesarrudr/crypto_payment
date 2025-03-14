@@ -19,7 +19,6 @@ import {
   Loader,
   LogOut,
   RefreshCw,
-  Send,
   Wallet,
 } from "lucide-react";
 import { useAccountHook, useBalanceHook } from "@/app/hooks";
@@ -32,8 +31,8 @@ const Dashboard = () => {
   const router = useRouter();
   const { user, status } = useAuthSession();
 
-  const [merchantTx, setMerchantTx] = useState<MerchantTxDataType | null>(null);
-  const [account, setAccount] = useState<GetAccountDataType | null>(null);
+  const [merchantTx, setMerchantTx] = useState<MerchantTxDataType>();
+  const [account, setAccount] = useState<GetAccountDataType>();
   const [skip, setSkip] = useState<number>(0);
   const [balance, setBalance] = useState<string>();
   const [copied, setCopied] = useState(false);
@@ -96,12 +95,11 @@ const Dashboard = () => {
 
       const tx = await getTranscation(0);
       if (tx) setMerchantTx(tx);
-
-      setIsCreatingAccount(false);
     } else {
       setAccount(null);
-      setIsCreatingAccount(false);
     }
+
+    setIsCreatingAccount(false);
   };
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -109,8 +107,8 @@ const Dashboard = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSignOut = () => {
-    signOut();
+  const handleSignOut = async () => {
+    await signOut();
     router.push("/signin");
   };
 

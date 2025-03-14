@@ -25,17 +25,10 @@ import { StatusEnum, ValidationErrors } from "@/types/types";
 import { Download, Lock, Shield } from "lucide-react";
 
 import LoadingOverlay from "@/components/loading-overlay";
-import { useAuthSession } from "@/context/session";
 
 export default function IndexPage() {
-  const { status } = useAuthSession();
-
   const router = useRouter();
 
-  //WARNING:
-  if (status === "authenticated") {
-    router.push("/dashboard");
-  }
   const { isLoading, registerMerchant } = useRegisterHook();
 
   const [inputData, setInputData] = useState<InputDataType>({
@@ -98,7 +91,6 @@ export default function IndexPage() {
 
     const response: SendResponseType<RegisterMerchantDataType> =
       await registerMerchant(inputData);
-
     if (response.status === StatusEnum.success) {
       setRegistrationSuccess(true);
       setRegistrationData(response.data);

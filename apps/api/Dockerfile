@@ -39,10 +39,7 @@ RUN pnpm run build
 
 # Stage 4: Final runtime image
 FROM node:22-slim AS runner
-
 RUN apt-get update -y && apt-get install -y openssl
-
-
 # Set working directory
 WORKDIR /app
 
@@ -62,7 +59,7 @@ ENV NODE_PATH=/app/apps/api/node_modules
 ENV PATH=$NODE_PATH/.bin:$PATH
 
 # Expose the application port
-EXPOSE 6969
+EXPOSE 8082
 
 # Start the server
 CMD ["node", "dist/server.js"]

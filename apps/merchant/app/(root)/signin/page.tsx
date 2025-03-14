@@ -2,7 +2,6 @@
 
 import { showErrorNotification } from "@/components/error-card";
 import LoadingOverlay from "@/components/loading-overlay";
-import { useAuthSession } from "@/context/session";
 import { FormErrors, ValidationErrors } from "@/types/types";
 import { LoginMerchantType } from "@repo/api";
 import { AnimatePresence, motion } from "framer-motion";
@@ -14,17 +13,10 @@ import React, { useEffect, useState } from "react";
 
 export default function Page() {
   const router = useRouter();
-
   const [credentials, setCredentials] = useState<LoginMerchantType>({
-    username: "",
-    password: "",
+    username: "anjana",
+    password: "123456",
   });
-  const { status } = useAuthSession();
-
-  //WARNING: Should be a protected route
-  if (status === "authenticated") {
-    router.push("/dashboard");
-  }
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);

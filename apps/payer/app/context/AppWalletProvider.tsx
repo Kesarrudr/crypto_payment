@@ -7,7 +7,6 @@ import {
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import React, { useMemo } from "react";
-import { clusterApiUrl } from "@solana/web3.js";
 // Default styles that can be overridden by your app
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -18,7 +17,7 @@ export default function AppWalletProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const network = process.env.NEXT_PUBLIC_RPC as WalletAdapterNetwork.Devnet;
+  const network = process.env.NEXT_PUBLIC_RPC || WalletAdapterNetwork.Devnet;
   const endpoint = useMemo(() => network, []);
   const wallets = useMemo(
     () => [

@@ -1,5 +1,5 @@
 import { axiosGetRequest, axiosPostRequest } from "@/axios-config/axios";
-import { GetAccountDataType, NewAccountDataType } from "@repo/api";
+import { GetAccountDataType, NewAccountDataType, StatusEnum } from "@repo/api";
 import { useState } from "react";
 
 const useAccountHook = () => {
@@ -25,7 +25,7 @@ const useAccountHook = () => {
       const account = await axiosPostRequest<any, NewAccountDataType>(
         "/merchant/newaccount",
       );
-      if (account.data) {
+      if (account.status === StatusEnum.success && account.data) {
         return account.data;
       }
     } finally {

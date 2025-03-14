@@ -9,7 +9,7 @@ const setGlobalErrorHandler = (handler: typeof globalErrorHandler) => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: process.env.baseURL || "http://localhost:6969/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_baseURL,
 });
 
 axiosInstance.interceptors.response.use(
